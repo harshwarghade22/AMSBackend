@@ -96,6 +96,12 @@
 			<optional>true</optional>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+
+
 		<!-- TEST (correct ones) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
