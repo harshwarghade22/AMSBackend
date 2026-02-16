@@ -14,7 +14,7 @@ public class BulkSeederController {
 
     @PostMapping("/transactions")
     @PreAuthorize("hasRole('ADMIN')")
-    public String seedTransactions(@RequestParam int txnPerAccount) {
+    public String seedTransactions(@RequestParam int txnPerAccount) throws InterruptedException {
         return seederService.seedLargeTransactions(txnPerAccount);
     }
 }
