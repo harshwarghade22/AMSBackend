@@ -5,6 +5,7 @@ import com.harshwarghade.project.entity.User;
 import com.harshwarghade.project.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +48,7 @@ public class UserService {
     }
 
     // When updating, clear cache
+    @CachePut(value = "user", key = "#id")
     @CacheEvict(value = {"users", "user"}, allEntries = true)
     public UserDto updateUser(Long id, User updatedUser) {
         User user = userRepository.findById(id)

@@ -46,7 +46,6 @@ public class TransactionExportController {
         if (!isOwner && !isAdmin) {
             throw new RuntimeException("Access denied for this account export");
         }
-
         return exportService.exportSingleAccountTransactions(accountId);
     }
 }
