@@ -11,6 +11,8 @@ import com.harshwarghade.project.entity.User;
 import com.harshwarghade.project.repository.AccountRepository;
 import com.harshwarghade.project.repository.UserRepository;
 import com.harshwarghade.project.service.AccountTransactionExportService;
+import com.harshwarghade.project.service.DailyReportSchedulerService;
+
 import org.springframework.security.core.Authentication;
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class TransactionExportController {
 
     private final AccountTransactionExportService exportService;
+    private final DailyReportSchedulerService reportSchedulerService;
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
 
@@ -47,5 +50,11 @@ public class TransactionExportController {
             throw new RuntimeException("Access denied for this account export");
         }
         return exportService.exportSingleAccountTransactions(accountId);
+    }
+
+    @GetMapping("/transactions/all")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public void exportTransactionsForAllAccounts() throws Exception {
+        reportSchedulerService.generateDailyTransactionReports();
     }
 }

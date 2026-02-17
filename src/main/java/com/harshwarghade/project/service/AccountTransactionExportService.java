@@ -1,6 +1,8 @@
 package com.harshwarghade.project.service;
 
 import com.harshwarghade.project.entity.Transaction;
+import com.harshwarghade.project.entity.TransactionCopy;
+import com.harshwarghade.project.repository.TransactionCopyRepository;
 import com.harshwarghade.project.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Row;
@@ -18,6 +20,7 @@ import java.util.UUID;
 public class AccountTransactionExportService {
 
     private final TransactionRepository transactionRepository;
+    private final TransactionCopyRepository transactionCopyRepository;
     private final S3Service s3Service;
 
     private static final int PAGE_SIZE = 5000; // Optimal for large datasets
@@ -44,20 +47,20 @@ public class AccountTransactionExportService {
             int page = 0;
 
             while (true) {
-                Page<Transaction> txnPage =
-                        transactionRepository.findByAccountId(
+                Page<TransactionCopy> txnPage =
+                        transactionCopyRepository.findByAccountId(
                                 accountId,
                                 PageRequest.of(page, PAGE_SIZE)
                         );
 
                 if (txnPage.isEmpty()) break;
 
-                for (Transaction txn : txnPage.getContent()) {
+                for (TransactionCopy txn : txnPage.getContent()) {
                     Row row = sheet.createRow(rowNum++);
                     row.createCell(0).setCellValue(txn.getId());
-                    row.createCell(1).setCellValue(txn.getAccount().getId());
+                    row.createCell(1).setCellValue(txn.getAccountId());
                     row.createCell(2).setCellValue(txn.getAmount());
-                    row.createCell(3).setCellValue(txn.getType().name());
+                    // row.createCell(3).setCellValue(txn.getType().name());
                     row.createCell(4).setCellValue(txn.getTimestamp().toString());
                 }
 

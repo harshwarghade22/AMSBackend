@@ -28,7 +28,7 @@ public class BankMigrationService {
     // 🔥 Optimized for local machine + large dataset
     private static final int PAGE_SIZE = 20000;   // reduces API calls drastically
     private static final int BATCH_SIZE = 5000;   // optimal JDBC batch for MySQL
-    private static final int THREAD_COUNT = 4;    // safe default for local CPU
+    private static final int THREAD_COUNT = 8;    // safe default for local CPU
 
     // Restart-safe (skips duplicates due to UNIQUE source_txn_id)
     private static final String INSERT_SQL =
