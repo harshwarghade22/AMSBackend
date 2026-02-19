@@ -16,7 +16,7 @@ public class WebClientConfig {
 
         // 🔥 Increase HTTP connection pool
         ConnectionProvider provider = ConnectionProvider.builder("bank-api-pool")
-                .maxConnections(50) // good for 16 threads
+                .maxConnections(300) // good for 16 threads
                 .pendingAcquireMaxCount(200)
                 .build();
 

@@ -2,6 +2,8 @@ package com.harshwarghade.project.service;
 
 import com.harshwarghade.project.dto.BankTxn;
 import com.harshwarghade.project.dto.PageResponse;
+// import com.harshwarghade.project.rabbitmq.TxnProducer;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -24,7 +26,8 @@ public class BankMigrationService {
     private final JdbcTemplate jdbcTemplate;
     private final WebClient webClient;
 
-    private static final String BANK_API_URL = "http://localhost:8081/api/bank/transactions?page=%d&size=%d";
+    // private static final String BANK_API_URL =
+    // "http://localhost:8081/api/bank/transactions?page=%d&size=%d";
 
     // 🔥 Optimized for local machine + large dataset
     private static final int PAGE_SIZE = 10000; // reduces API calls drastically
@@ -79,7 +82,7 @@ public class BankMigrationService {
         long totalTimeSec = (System.currentTimeMillis() - startTime) / 1000;
 
         if (finished) {
-            log.info("🎉 MIGRATION COMPLETED SUCCESSFULLY!");
+            log.info("MIGRATION COMPLETED SUCCESSFULLY!");
             log.info("Total Records Migrated: {}", totalMigrated.get());
             log.info("Total Time Taken: {} seconds (~{} minutes)",
                     totalTimeSec, totalTimeSec / 60);
@@ -88,44 +91,7 @@ public class BankMigrationService {
         }
     }
 
-    // private void processPage(int page, AtomicLong totalMigrated) {
-
-    // long pageStart = System.currentTimeMillis();
-
-    // PageResponse<BankTxn> pageData = fetchPage(page);
-
-    // if (pageData == null || pageData.getContent() == null ||
-    // pageData.getContent().isEmpty()) {
-    // log.warn("Page {} returned empty data.", page);
-    // return;
-    // }
-
-    // var transactions = pageData.getContent();
-
-    // // 🔥 Ultra-fast JDBC batch insert (no Hibernate overhead)
-    // jdbcTemplate.batchUpdate(
-    // INSERT_SQL,
-    // transactions,
-    // BATCH_SIZE,
-    // (ps, txn) -> {
-    // ps.setDouble(1, txn.getAmount());
-    // ps.setObject(2, txn.getTimestamp());
-    // ps.setString(3, txn.getType());
-    // ps.setLong(4, txn.getAccountId());
-    // ps.setLong(5, txn.getId()); // source_txn_id for dedup safety
-    // }
-    // );
-
-    // long migrated = totalMigrated.addAndGet(transactions.size());
-    // long pageTimeSec = (System.currentTimeMillis() - pageStart) / 1000;
-
-    // // Reduce logging overhead (log every 10 pages)
-    // if (page % 10 == 0) {
-    // log.info("Page {} done | Records: {} | Page Time: {} sec | Total Migrated:
-    // {}",
-    // page, transactions.size(), pageTimeSec, migrated);
-    // }
-    // }
+    
 
     private void processPage(int page, AtomicLong totalMigrated) {
 
@@ -133,7 +99,8 @@ public class BankMigrationService {
 
         PageResponse<BankTxn> pageData = fetchPage(page);
 
-        if (pageData == null || pageData.getContent() == null || pageData.getContent().isEmpty()) {
+        if (pageData == null || pageData.getContent() == null ||
+                pageData.getContent().isEmpty()) {
             log.warn("Page {} returned empty data.", page);
             return;
         }
@@ -163,10 +130,38 @@ public class BankMigrationService {
         long pageTimeSec = (System.currentTimeMillis() - pageStart) / 1000;
 
         if (page % 10 == 0) {
-            log.info("Page {} done | Records: {} | Page Time: {} sec | Total Migrated: {}",
-                    page, transactions.size(), pageTimeSec, migrated);
+            log.info("Page {} done | Records: {} | Page Time: {} sec | Total Migrated: {}", page, transactions.size(),
+                    pageTimeSec, migrated);
         }
     }
+
+    // private final TxnProducer txnProducer;
+
+    // private void processPage(int page, AtomicLong totalMigrated) {
+
+    // long pageStart = System.currentTimeMillis();
+
+    // PageResponse<BankTxn> pageData = fetchPage(page);
+
+    // if (pageData == null || pageData.getContent() == null ||
+    // pageData.getContent().isEmpty()) {
+    // log.warn("Page {} returned empty data.", page);
+    // return;
+    // }
+
+    // var transactions = pageData.getContent();
+
+    // // SEND TO RABBITMQ INSTEAD OF DIRECT DB INSERT
+    // txnProducer.sendBatch(transactions);
+
+    // long migrated = totalMigrated.addAndGet(transactions.size());
+    // long pageTimeSec = (System.currentTimeMillis() - pageStart) / 1000;
+
+    // if (page % 10 == 0) {
+    // log.info("Page {} pushed to queue | Records: {} | Total Pushed: {}",
+    // page, transactions.size(), migrated);
+    // }
+    // }
 
     private PageResponse<BankTxn> fetchPage(int page) {
         try {

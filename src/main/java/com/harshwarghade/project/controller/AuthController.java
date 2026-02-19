@@ -14,6 +14,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public AuthResponseDto register(@RequestBody RegisterRequestDto request) {
+        // The logic for admin-only registration is handled in AuthService
         return authService.register(request);
     }
 
