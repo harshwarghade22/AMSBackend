@@ -41,10 +41,34 @@ public class TransactionService {
                     .map(tx -> new TransactionResponse(
                             tx.getAmount(),
                             tx.getType(),
-                            tx.getTimestamp()))
+                            tx.getTimestamp(),
+                            tx.getAccount().getAccountNumber()))
                     .collect(Collectors.toList());
         } catch (Exception e) {
             
+            throw new RuntimeException("Failed to fetch transactions: " + e.getMessage(), e);
+        }
+    }
+
+    public com.harshwarghade.project.dto.PageResponse<TransactionResponse> getAllTransactions(int page, int size) {
+        try {
+            org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+            org.springframework.data.domain.Page<com.harshwarghade.project.entity.Transaction> transactionPage = transactionRepository.findAll(pageable);
+            java.util.List<TransactionResponse> content = transactionPage.getContent().stream()
+                    .map(tx -> new TransactionResponse(
+                            tx.getAmount(),
+                            tx.getType(),
+                            tx.getTimestamp(),
+                            tx.getAccount().getAccountNumber()))
+                    .collect(java.util.stream.Collectors.toList());
+            com.harshwarghade.project.dto.PageResponse<TransactionResponse> response = new com.harshwarghade.project.dto.PageResponse<>();
+            response.setContent(content);
+            response.setLast(transactionPage.isLast());
+            response.setNumber(transactionPage.getNumber());
+            response.setTotalPages(transactionPage.getTotalPages());
+            response.setSize(transactionPage.getSize());
+            return response;
+        } catch (Exception e) {
             throw new RuntimeException("Failed to fetch transactions: " + e.getMessage(), e);
         }
     }
