@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-public class TransactionResponse {
+public class TransactionResponse implements java.io.Serializable {
 
     private Double amount;
     private TransactionType type;
