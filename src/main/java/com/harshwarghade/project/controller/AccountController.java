@@ -37,7 +37,7 @@ public class AccountController {
 
     // USER views only their accounts
     @GetMapping
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PreAuthorize("hasAnyRole('USER')")
     public List<UserAccountResponse> getMyAccounts(Authentication authentication) {
 
         String email = authentication.getName();

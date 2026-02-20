@@ -67,7 +67,9 @@ public class AccountService {
                 .map(account -> new UserAccountResponse(
                         account.getAccountNumber(),
                         account.getAccountType().name(),
-                        account.getBalance()))
+                        account.getBalance(),
+                        account.getUser().getId(),
+                        account.getId()))
                 .collect(Collectors.toList());
     }
 

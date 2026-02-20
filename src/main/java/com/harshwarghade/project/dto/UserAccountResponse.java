@@ -10,4 +10,6 @@ public class UserAccountResponse {
     private String accountNumber;
     private String accountType;
     private Double balance;
+    private Long userId;
+    private Long accountId;
 }

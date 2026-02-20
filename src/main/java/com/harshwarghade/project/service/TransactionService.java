@@ -39,7 +39,8 @@ public class TransactionService {
                         tx.getAmount(),
                         tx.getType(),
                         tx.getTimestamp(),
-                        tx.getAccount().getAccountNumber()
+                        tx.getAccount().getAccountNumber(),
+                        tx.getAccount().getId()
                 ))
                 .collect(Collectors.toList());
 
@@ -53,21 +54,34 @@ public class TransactionService {
         return response;
     }
 
-    // 🔥 Cache account-specific transaction history
-    @Cacheable(value = "accountTransactions", key = "#accountId")
-    public List<TransactionResponse> getTransactionsByAccount(Long accountId) {
+        // 🔥 Cache account-specific transaction history with pagination
+        @Cacheable(value = "accountTransactions", key = "#accountId + '-' + #page + '-' + #size")
+        public PageResponse<TransactionResponse> getTransactionsByAccount(Long accountId, int page, int size) {
         System.out.println("Fetching account transactions from DATABASE...");
 
-        List<Transaction> transactions = transactionRepository.findByAccountId(accountId);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Transaction> transactionPage = transactionRepository.findByAccountId(accountId, pageable);
 
-        return transactions.stream()
-                .map(tx -> new TransactionResponse(
-                        tx.getAmount(),
-                        tx.getType(),
-                        tx.getTimestamp(),
-                        tx.getAccount().getAccountNumber()))
-                .collect(Collectors.toList());
-    }
+        List<TransactionResponse> content = transactionPage.getContent()
+            .stream()
+            .map(tx -> new TransactionResponse(
+                tx.getAmount(),
+                tx.getType(),
+                tx.getTimestamp(),
+                tx.getAccount().getAccountNumber(),
+                tx.getAccount().getId()
+            ))
+            .collect(Collectors.toList());
+
+        PageResponse<TransactionResponse> response = new PageResponse<>();
+        response.setContent(content);
+        response.setLast(transactionPage.isLast());
+        response.setNumber(transactionPage.getNumber());
+        response.setTotalPages(transactionPage.getTotalPages());
+        response.setSize(transactionPage.getSize());
+
+        return response;
+        }
 
     // Record a transaction (internal use)
     public void recordTransaction(Account account, Double amount, TransactionType type) {

@@ -1,5 +1,6 @@
 package com.harshwarghade.project.controller;
 
+import com.harshwarghade.project.dto.PageResponse;
 import com.harshwarghade.project.dto.TransactionResponse;
 import com.harshwarghade.project.entity.Account;
 import com.harshwarghade.project.entity.User;
@@ -25,9 +26,11 @@ public class TransactionController {
     // USER: View transactions of their own account
     @GetMapping("/{accountId}")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public List<TransactionResponse> getTransactions(
+    public PageResponse<TransactionResponse> getTransactions(
             @PathVariable Long accountId,
-            Authentication authentication) {
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
         String email = authentication.getName();
 
@@ -42,6 +45,6 @@ public class TransactionController {
             throw new RuntimeException("Access denied to this account");
         }
 
-        return transactionService.getTransactionsByAccount(accountId);
+        return transactionService.getTransactionsByAccount(accountId, page, size);
     }
 }
